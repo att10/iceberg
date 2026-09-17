@@ -469,9 +469,13 @@ public class SparkScanBuilder
 
     scan = configureSplitPlanning(scan);
 
-    List<String> statsColumns = lineageStatsColumns(expectedSchema);
-    if (!statsColumns.isEmpty()) {
-      scan = scan.includeColumnStats(statsColumns);
+    try {
+      List<String> statsColumns = lineageStatsColumns(expectedSchema);
+      if (!statsColumns.isEmpty()) {
+        scan = scan.includeColumnStats(statsColumns);
+      }
+    } catch (RuntimeException e) {
+      LOG.warn("Skipping Column-Value Lineage column-stats retention due to an error", e);
     }
 
     return new SparkBatchQueryScan(

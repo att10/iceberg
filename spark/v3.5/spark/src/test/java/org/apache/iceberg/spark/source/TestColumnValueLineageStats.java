@@ -50,7 +50,7 @@ public class TestColumnValueLineageStats extends TestBaseWithCatalog {
   private void createTable() {
     sql("CREATE TABLE %s (id BIGINT, datepartition STRING) USING iceberg", tableName);
     sql(
-        "INSERT INTO %s VALUES (1, '2024-01-01'), (2, '2024-01-02'), (3, '2024-01-03')",
+        "INSERT INTO %s VALUES (1, '2024-01-01-00'), (2, '2024-01-01-01'), (3, '2024-01-02-00')",
         tableName);
   }
 
