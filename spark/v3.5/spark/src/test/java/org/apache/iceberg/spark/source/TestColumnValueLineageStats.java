@@ -123,4 +123,13 @@ public class TestColumnValueLineageStats extends TestBaseWithCatalog {
         tableName);
     assertThat(boundedColumnIds()).contains(fieldId("datepartition"));
   }
+
+  @TestTemplate
+  public void testConfiguredColumnResolvesCaseInsensitively() {
+    createTable();
+    sql(
+        "ALTER TABLE %s SET TBLPROPERTIES ('lineage.columnValues.columns' = 'DATEPARTITION')",
+        tableName);
+    assertThat(boundedColumnIds()).contains(fieldId("datepartition"));
+  }
 }

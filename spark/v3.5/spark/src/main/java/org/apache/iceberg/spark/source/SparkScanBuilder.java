@@ -511,8 +511,16 @@ public class SparkScanBuilder
     List<String> statsColumns = Lists.newArrayList();
     for (String column : configured.split(",")) {
       String name = column.trim();
-      if (!name.isEmpty() && expectedSchema.findField(name) != null) {
-        statsColumns.add(name);
+      if (name.isEmpty()) {
+        continue;
+      }
+
+      Types.NestedField field =
+          caseSensitive
+              ? expectedSchema.findField(name)
+              : expectedSchema.caseInsensitiveFindField(name);
+      if (field != null) {
+        statsColumns.add(field.name());
       }
     }
 
