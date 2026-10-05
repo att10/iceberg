@@ -105,8 +105,7 @@ case class ExtendedDataSourceV2Strategy(spark: SparkSession) extends Strategy {
       withProjectAndFilter(project, filters, batchExec, !batchExec.supportsColumnar) :: Nil
 
     case ReplaceData(relation: DataSourceV2Relation, batchWrite, query) =>
-      // Retain the target table through planning so the physical write can derive its
-      // output name and use the table's metadata.
+      // Retain the target table through planning so it is exposed on the physical write.
       ReplaceDataExec(
         batchWrite,
         Some(relation.table),

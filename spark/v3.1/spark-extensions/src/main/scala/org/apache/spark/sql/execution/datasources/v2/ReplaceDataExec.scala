@@ -20,9 +20,10 @@
 package org.apache.spark.sql.execution.datasources.v2
 
 import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.trees.TreeNodeTag
 import org.apache.spark.sql.connector.catalog.Table
 import org.apache.spark.sql.connector.write.BatchWrite
-import org.apache.spark.sql.execution.{SparkPlan, SparkPlanIO}
+import org.apache.spark.sql.execution.SparkPlan
 
 case class ReplaceDataExec(
     batchWrite: BatchWrite,
@@ -30,16 +31,21 @@ case class ReplaceDataExec(
     refreshCache: () => Unit,
     query: SparkPlan) extends V2TableWriteExec {
 
-  val targetTableName: Option[String] = targetTable.map(table => SparkPlanIO.formatV2TableName(table))
-
-  // The internal merge scan does not expose the target through the write RDD.
-  override protected def lineageInputs: Seq[String] = targetTableName.toSeq
+  targetTable.foreach(table => setTagValue(ReplaceDataExec.TargetTableTag, table))
 
   override protected def run(): Seq[InternalRow] = {
     // calling prepare() ensures we execute DynamicFileFilter if present
     prepare()
-    val writtenRows = writeWithV2(batchWrite, targetTableName, targetTable)
+    val writtenRows = writeWithV2(batchWrite)
     refreshCache()
     writtenRows
   }
+}
+
+object ReplaceDataExec {
+  /**
+   * Tag holding the table rewritten by this node. Lets Spark distributions that report write
+   * lineage find the target of a row-level rewrite without depending on Iceberg classes.
+   */
+  val TargetTableTag: TreeNodeTag[Table] = TreeNodeTag[Table]("iceberg.replaceData.targetTable")
 }

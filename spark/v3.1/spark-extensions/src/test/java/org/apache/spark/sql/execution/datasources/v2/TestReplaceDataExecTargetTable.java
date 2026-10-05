@@ -56,21 +56,26 @@ public class TestReplaceDataExecTargetTable {
       };
 
   @Test
-  public void testTargetTableBecomesLineageInput() {
+  public void testTargetTableIsExposed() {
     ReplaceDataExec exec = new ReplaceDataExec(null, Option.apply(TABLE), null, null);
 
-    Assert.assertEquals(TABLE_NAME, exec.lineageInputs().head());
-    Assert.assertEquals(1, exec.lineageInputs().size());
-    Assert.assertEquals(TABLE_NAME, exec.targetTableName().get());
     Assert.assertSame(TABLE, exec.targetTable().get());
+    Assert.assertSame(TABLE, exec.getTagValue(ReplaceDataExec$.MODULE$.TargetTableTag()).get());
   }
 
   @Test
-  public void testMissingTableMetadataKeepsLineageInputEmpty() {
+  public void testTargetTableTagSurvivesCopy() {
+    ReplaceDataExec exec = new ReplaceDataExec(null, Option.apply(TABLE), null, null);
+    ReplaceDataExec copy = exec.copy(null, exec.targetTable(), null, null);
+
+    Assert.assertSame(TABLE, copy.getTagValue(ReplaceDataExec$.MODULE$.TargetTableTag()).get());
+  }
+
+  @Test
+  public void testMissingTargetTableIsNotTagged() {
     ReplaceDataExec exec = new ReplaceDataExec(null, Option.empty(), null, null);
 
-    Assert.assertTrue(exec.lineageInputs().isEmpty());
-    Assert.assertTrue(exec.targetTableName().isEmpty());
     Assert.assertTrue(exec.targetTable().isEmpty());
+    Assert.assertTrue(exec.getTagValue(ReplaceDataExec$.MODULE$.TargetTableTag()).isEmpty());
   }
 }
